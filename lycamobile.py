@@ -11,8 +11,8 @@ import sys
 def get_credentials():
     config = configparser.ConfigParser()
     config.read('credential')
-    username = config.get('credential', 'username')
-    password = config.get('credential', 'password')
+    username = config.get('lyca', 'username')
+    password = config.get('lyca', 'password')
     return username, password
 
 
