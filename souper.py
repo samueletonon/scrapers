@@ -3,23 +3,46 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from time import sleep
-import configparser
 import sys, time
 import datetime
 import json
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
 import codecs
 
 
 fr = open("cc",'r')
 html_source = fr.read()
 fr.close()
-soup = BeautifulSoup(html_source)
+soup = BeautifulSoup(html_source, 'html.parser')
 table = soup.findAll(id="receivedTransactions")[0]
 tbody = table.findAll("tbody")[1]
-for tr in tbody.findAll("tr")
- ##
+total = []
+for tr in tbody.findAll("tr"):
+    exp_list = tr.findAll("td")
+    singlee = {}
+    if len(exp_list) > 1:
+        #date
+        if exp_list[0].text != "":
+            # datetime.datetime.strptime(exp_list[0].text, '%d-%m-%Y')
+            singlee['when'] = exp_list[0].text
+        details = exp_list[1].findAll("div")
+        if len(details) > 12:
+            # what i.e. AH
+            singlee['what'] = details[0].text
+            # transaction
+            singlee['trans'] = details[1].text
+            # Mutatiesoort
+            singlee['st1'] = details[4].text
+            # BA
+            singlee['type'] = details[5].text
+            # Mededelingen
+            singlee['st2'] = details[7].text
+            # Transactie:32K5Q6 Term:605Q60 
+            singlee['trans'] = details[11].text
+            # Amount
+            ll = exp_list[3].text.split(' ')
+            singlee['amount'] = float(ll[0].replace('.','').replace(',','.'))
+            singlee['dir'] = ll[-1]
+    total.append(singlee)
+fw = codecs.open("cc.json", 'w', encoding='utf8')
+fw.write(json.dumps(total))
+fw.close()
