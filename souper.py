@@ -8,6 +8,8 @@ import datetime
 import json
 import codecs
 
+from elasticsearch import Elasticsearch
+
 
 fr = open("cc",'r')
 html_source = fr.read()
@@ -24,6 +26,7 @@ for tr in tbody.findAll("tr"):
         if exp_list[0].text != "":
             # datetime.datetime.strptime(exp_list[0].text, '%d-%m-%Y')
             singlee['when'] = exp_list[0].text
+            singlee['pub_date'] = datetime.datetime.strptime(exp_list[0].text, '%d-%m-%Y').strftime('%Y-%m-%dT%H:%M:%S')
         details = exp_list[1].findAll("div")
         if len(details) > 12:
             # what i.e. AH
@@ -42,7 +45,18 @@ for tr in tbody.findAll("tr"):
             ll = exp_list[3].text.split(' ')
             singlee['amount'] = float(ll[0].replace('.','').replace(',','.'))
             singlee['dir'] = ll[-1]
+            if singlee['dir'] != 'Af':
+                singlee['value'] = singlee['amount'] * -1
+            else:
+                singlee['value'] = singlee['amount']
     total.append(singlee)
 fw = codecs.open("cc.json", 'w', encoding='utf8')
 fw.write(json.dumps(total))
 fw.close()
+es = Elasticsearch(['localhost:9200'])
+for doc in total:
+    res = es.index(index="test-index", doc_type='entry', body=doc)
+    print(res['created'])
+
+es.indices.refresh(index="test-index")
+
