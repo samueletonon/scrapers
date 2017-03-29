@@ -40,7 +40,7 @@ cal_min = driver.find_element_by_xpath('//*[@id="dateRangeMin-input"]')
 cal_max = driver.find_element_by_xpath('//*[@id="dateRangeMax-input"]')
 
 cal_min.send_keys("01-03-2016")
-cal_max.send_keys("01-03-2017")
+cal_max.send_keys(datetime.datetime.now().strftime("%d-%m-%Y"))
 time.sleep(2)
 search_button = driver.find_element_by_xpath('//*[@id="form-submit-btnA"]')
 search_button.click()
@@ -54,3 +54,4 @@ html_source = driver.page_source
 fw = codecs.open("cc", 'w', encoding='utf8')
 fw.write(html_source)
 fw.close()
+driver.close()

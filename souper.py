@@ -8,8 +8,6 @@ import datetime
 import json
 import codecs
 
-from elasticsearch import Elasticsearch
-
 
 fr = open("cc",'r')
 html_source = fr.read()
@@ -27,6 +25,9 @@ for tr in tbody.findAll("tr"):
             # datetime.datetime.strptime(exp_list[0].text, '%d-%m-%Y')
             singlee['when'] = exp_list[0].text
             singlee['pub_date'] = datetime.datetime.strptime(exp_list[0].text, '%d-%m-%Y').strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            singlee['when'] = ""
+            singlee['pub_date'] = ""
         details = exp_list[1].findAll("div")
         if len(details) > 12:
             # what i.e. AH
@@ -46,17 +47,17 @@ for tr in tbody.findAll("tr"):
             singlee['amount'] = float(ll[0].replace('.','').replace(',','.'))
             singlee['dir'] = ll[-1]
             if singlee['dir'] != 'Af':
-                singlee['value'] = singlee['amount'] * -1
-            else:
                 singlee['value'] = singlee['amount']
-    total.append(singlee)
+            else:
+                singlee['value'] = singlee['amount'] * -1
+    if len(singlee.keys()) > 3 :
+        total.append(singlee)
+        try:
+            print "{};{};{}".format(singlee['when'], singlee['what'], singlee['value'])
+        except Exception,e :
+            print e
+            print singlee
+
 fw = codecs.open("cc.json", 'w', encoding='utf8')
 fw.write(json.dumps(total))
 fw.close()
-es = Elasticsearch(['localhost:9200'])
-for doc in total:
-    res = es.index(index="test-index", doc_type='entry', body=doc)
-    print(res['created'])
-
-es.indices.refresh(index="test-index")
-
